@@ -1,0 +1,13 @@
+LICENSE
+README.md
+mcp_system_monitor_server.py
+pyproject.toml
+mcp_system_monitor.egg-info/PKG-INFO
+mcp_system_monitor.egg-info/SOURCES.txt
+mcp_system_monitor.egg-info/dependency_links.txt
+mcp_system_monitor.egg-info/requires.txt
+mcp_system_monitor.egg-info/top_level.txt
+tests/test_architecture_agnostic.py
+tests/test_mcp_server_integration.py
+tests/test_mcp_system_monitor_server.py
+tests/test_mcp_system_monitor_server_comprehensive.py

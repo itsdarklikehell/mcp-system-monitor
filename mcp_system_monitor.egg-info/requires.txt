@@ -1,0 +1,15 @@
+mcp[cli]
+psutil
+pydantic
+nvidia-ml-py
+pynvml
+uv
+
+[dev]
+pytest
+pytest-asyncio
+pytest-cov
+
+[win32]
+wmi
+pywin32

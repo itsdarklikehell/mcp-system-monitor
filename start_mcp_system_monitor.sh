@@ -2,7 +2,8 @@
 # Activate the python environment and starts the Python API MCP Server
 
 # Project path - get the directory where this script is located
-PROJECT_DIR="${0:A:h}"
+PROJECT_DIR=/media/rizzo/RAIDSTATION/stacks/mcp-stack/DATA/mcp-system-monitor
+
 cd "$PROJECT_DIR"
 
 # Activate the virtual environment
