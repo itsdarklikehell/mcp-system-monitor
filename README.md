@@ -140,11 +140,11 @@ Modify the following JSON template to set the path to the MCP server in your MCP
 ```json
 {
   "mcpServers": {
-    "mpc-system-monitor": {
+    "mcp-system-monitor": {
       "command": "cmd",
       "args": [
         "/c",
-        "C:/Users/Sören Gebbert/Documents/GitHub/mcp-system-monitor/start_mpc_system_monitor.bat"
+        "C:/Users/Sören Gebbert/Documents/GitHub/mcp-system-monitor/start_mcp_system_monitor.bat"
       ]
     }
   }
@@ -156,7 +156,7 @@ Modify the following JSON template to set the path to the MCP server in your MCP
 ```json
 {
   "mcpServers": {
-    "mpc-system-monitor": {
+    "mcp-system-monitor": {
       "command": "/bin/zsh",
       "args": [
         "/Users/holistech/Documents/GitHub/mcp-system-monitor/start_mcp_system_monitor.sh"

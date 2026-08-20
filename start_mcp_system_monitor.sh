@@ -2,7 +2,8 @@
 # Activate the python environment and starts the Python API MCP Server
 
 # Project path - get the directory where this script is located
-PROJECT_DIR=/media/rizzo/RAIDSTATION/stacks/mcp-stack/DATA/mcp-system-monitor
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
 
 cd "$PROJECT_DIR"
 
