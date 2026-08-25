@@ -1,13 +1,13 @@
-from mcp.server.fastmcp import FastMCP, Context
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 import asyncio
-import psutil
-import time
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
-from datetime import datetime
 import logging
+import time
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any
+
+import psutil
+from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel, Field
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -33,20 +33,20 @@ import platform
 
 class CPUInfo(BaseModel):
     usage_percent: float = Field(description="CPU usage percentage")
-    usage_per_core: List[float] = Field(description="Per-core usage")
+    usage_per_core: list[float] = Field(description="Per-core usage")
     frequency_current: float = Field(description="Current frequency in MHz")
     frequency_max: float = Field(description="Maximum frequency in MHz")
     core_count: int = Field(description="Number of CPU cores")
     thread_count: int = Field(description="Number of CPU threads")
-    temperature: Optional[float] = Field(None, description="CPU temperature in Celsius")
+    temperature: float | None = Field(None, description="CPU temperature in Celsius")
     processor_name: str = Field(description="CPU model name")
     vendor: str = Field(description="CPU manufacturer")
     architecture: str = Field(description="CPU architecture")
     bits: int = Field(description="CPU bits (32 or 64)")
-    cpu_family: Optional[str] = Field(None, description="CPU family")
-    model: Optional[str] = Field(None, description="CPU model number")
-    stepping: Optional[str] = Field(None, description="CPU stepping")
-    cache_sizes: Optional[Dict[str, int]] = Field(None, description="CPU cache sizes in KB")
+    cpu_family: str | None = Field(None, description="CPU family")
+    model: str | None = Field(None, description="CPU model number")
+    stepping: str | None = Field(None, description="CPU stepping")
+    cache_sizes: dict[str, int] | None = Field(None, description="CPU cache sizes in KB")
 
 
 class GPUInfo(BaseModel):
@@ -54,11 +54,11 @@ class GPUInfo(BaseModel):
     usage_percent: float = Field(description="GPU usage percentage")
     memory_used_mb: int = Field(description="Used VRAM in MB")
     memory_total_mb: int = Field(description="Total VRAM in MB")
-    temperature: Optional[float] = Field(None, description="GPU temperature")
-    power_usage: Optional[float] = Field(None, description="Power usage in watts")
-    cores: Optional[int] = Field(None, description="Number of GPU cores (Apple Silicon)")
-    unified_memory: Optional[bool] = Field(None, description="Whether GPU uses unified memory")
-    metal_support: Optional[str] = Field(None, description="Metal API support version")
+    temperature: float | None = Field(None, description="GPU temperature")
+    power_usage: float | None = Field(None, description="Power usage in watts")
+    cores: int | None = Field(None, description="Number of GPU cores (Apple Silicon)")
+    unified_memory: bool | None = Field(None, description="Whether GPU uses unified memory")
+    metal_support: str | None = Field(None, description="Metal API support version")
 
 
 class MemoryInfo(BaseModel):
@@ -97,14 +97,14 @@ class IOPerformanceInfo(BaseModel):
     read_time_ms: float = Field(description="Average read time in milliseconds")
     write_time_ms: float = Field(description="Average write time in milliseconds")
     busy_time_percent: float = Field(description="Disk busy time percentage")
-    per_disk_stats: List[Dict[str, Any]] = Field(description="Per-disk I/O statistics")
+    per_disk_stats: list[dict[str, Any]] = Field(description="Per-disk I/O statistics")
 
 
 class SystemLoadInfo(BaseModel):
     """System load and performance metrics"""
-    load_average_1m: Optional[float] = Field(None, description="1-minute load average")
-    load_average_5m: Optional[float] = Field(None, description="5-minute load average") 
-    load_average_15m: Optional[float] = Field(None, description="15-minute load average")
+    load_average_1m: float | None = Field(None, description="1-minute load average")
+    load_average_5m: float | None = Field(None, description="5-minute load average") 
+    load_average_15m: float | None = Field(None, description="15-minute load average")
     context_switches_per_sec: float = Field(description="Context switches per second")
     interrupts_per_sec: float = Field(description="Interrupts per second")
     processes_running: int = Field(description="Number of running processes")
@@ -121,14 +121,14 @@ class EnhancedMemoryInfo(BaseModel):
     swap_total_gb: float = Field(description="Total swap in GB")
     swap_used_gb: float = Field(description="Used swap in GB")
     # Enhanced metrics
-    buffers_gb: Optional[float] = Field(None, description="Buffer memory in GB")
-    cached_gb: Optional[float] = Field(None, description="Cached memory in GB")
-    shared_gb: Optional[float] = Field(None, description="Shared memory in GB")
-    active_gb: Optional[float] = Field(None, description="Active memory in GB")
-    inactive_gb: Optional[float] = Field(None, description="Inactive memory in GB")
-    page_faults_per_sec: Optional[float] = Field(None, description="Page faults per second")
-    swap_in_per_sec: Optional[float] = Field(None, description="Swap in operations per second")
-    swap_out_per_sec: Optional[float] = Field(None, description="Swap out operations per second")
+    buffers_gb: float | None = Field(None, description="Buffer memory in GB")
+    cached_gb: float | None = Field(None, description="Cached memory in GB")
+    shared_gb: float | None = Field(None, description="Shared memory in GB")
+    active_gb: float | None = Field(None, description="Active memory in GB")
+    inactive_gb: float | None = Field(None, description="Inactive memory in GB")
+    page_faults_per_sec: float | None = Field(None, description="Page faults per second")
+    swap_in_per_sec: float | None = Field(None, description="Swap in operations per second")
+    swap_out_per_sec: float | None = Field(None, description="Swap out operations per second")
 
 
 class EnhancedNetworkInfo(BaseModel):
@@ -147,8 +147,8 @@ class EnhancedNetworkInfo(BaseModel):
     errors_out: int = Field(description="Output errors")
     drops_in: int = Field(description="Input packets dropped")
     drops_out: int = Field(description="Output packets dropped")
-    speed_mbps: Optional[float] = Field(None, description="Interface speed in Mbps")
-    mtu: Optional[int] = Field(None, description="Maximum transmission unit")
+    speed_mbps: float | None = Field(None, description="Interface speed in Mbps")
+    mtu: int | None = Field(None, description="Maximum transmission unit")
     is_up: bool = Field(description="Interface is up")
 
 
@@ -157,7 +157,7 @@ class SystemPerformanceSnapshot(BaseModel):
     io_performance: IOPerformanceInfo
     system_load: SystemLoadInfo
     enhanced_memory: EnhancedMemoryInfo
-    enhanced_network: List[EnhancedNetworkInfo]
+    enhanced_network: list[EnhancedNetworkInfo]
     collection_time: datetime = Field(default_factory=datetime.now)
 
 
@@ -165,9 +165,9 @@ class SystemSnapshot(BaseModel):
     """Complete system information snapshot"""
     system: SystemInfo
     cpu: CPUInfo
-    gpus: List[GPUInfo]
+    gpus: list[GPUInfo]
     memory: MemoryInfo
-    disks: List[DiskInfo]
+    disks: list[DiskInfo]
     collection_time: datetime = Field(default_factory=datetime.now)
 
 
@@ -175,15 +175,15 @@ class BaseCollector(ABC):
 
     def __init__(self, update_interval: float = 1.0):
         self.update_interval = update_interval
-        self._cache: Dict[str, Any] = {}
-        self._last_update: Optional[float] = None
+        self._cache: dict[str, Any] = {}
+        self._last_update: float | None = None
         self._lock = asyncio.Lock()
 
     @abstractmethod
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         pass
 
-    async def get_cached_data(self, max_age: float = 2.0) -> Dict[str, Any]:
+    async def get_cached_data(self, max_age: float = 2.0) -> dict[str, Any]:
         async with self._lock:
             current_time = time.time()
 
@@ -207,7 +207,7 @@ class CPUCollector(BaseCollector):
         super().__init__()
         self._static_cpu_info = self._get_static_cpu_info()
 
-    def _get_static_cpu_info(self) -> Dict[str, Any]:
+    def _get_static_cpu_info(self) -> dict[str, Any]:
         """Get static CPU information that doesn't change during runtime."""
         import subprocess
 
@@ -227,7 +227,7 @@ class CPUCollector(BaseCollector):
         if platform.system() == "Windows":
             try:
                 # Use wmic to get CPU details
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: PLW1510
                     ["wmic", "cpu", "get", "Name,Manufacturer,Family,Model,Stepping,L2CacheSize,L3CacheSize", "/value"],
                     capture_output=True, text=True, timeout=5
                 )
@@ -255,7 +255,7 @@ class CPUCollector(BaseCollector):
                                     cache_sizes["L3"] = int(value.strip())
                                 except ValueError:
                                     pass
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.debug(f"Failed to get detailed CPU info via wmic: {e}")
 
         elif platform.system() == "Linux":
@@ -289,7 +289,7 @@ class CPUCollector(BaseCollector):
                                 pass
 
                 # Try lscpu for additional cache info
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: PLW1510
                     ["lscpu"], capture_output=True, text=True, timeout=5
                 )
                 if result.returncode == 0:
@@ -299,14 +299,14 @@ class CPUCollector(BaseCollector):
                                 value = line.split(':')[1].strip()
                                 if 'K' in value:
                                     cache_sizes["L1d"] = int(value.replace('K', '').strip())
-                            except:
+                            except Exception:  # noqa: BLE001,S110
                                 pass
                         elif 'L1i cache:' in line:
                             try:
                                 value = line.split(':')[1].strip()
                                 if 'K' in value:
                                     cache_sizes["L1i"] = int(value.replace('K', '').strip())
-                            except:
+                            except Exception:  # noqa: BLE001,S110
                                 pass
                         elif 'L2 cache:' in line:
                             try:
@@ -315,16 +315,16 @@ class CPUCollector(BaseCollector):
                                     cache_sizes["L2"] = int(value.replace('K', '').strip())
                                 elif 'M' in value:
                                     cache_sizes["L2"] = int(value.replace('M', '').strip()) * 1024
-                            except:
+                            except Exception:  # noqa: BLE001,S110
                                 pass
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.debug(f"Failed to parse /proc/cpuinfo: {e}")
 
         elif platform.system() == "Darwin":  # macOS
             try:
                 # Use sysctl to get CPU info
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: PLW1510
                     ["sysctl", "-n", "machdep.cpu.brand_string"],
                     capture_output=True, text=True, timeout=5
                 )
@@ -332,7 +332,7 @@ class CPUCollector(BaseCollector):
                     processor_name = result.stdout.strip()
 
                 # Get vendor
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: PLW1510
                     ["sysctl", "-n", "machdep.cpu.vendor"],
                     capture_output=True, text=True, timeout=5
                 )
@@ -347,7 +347,7 @@ class CPUCollector(BaseCollector):
                     ("L3", "hw.l3cachesize")
                 ]:
                     try:
-                        result = subprocess.run(
+                        result = subprocess.run(  # noqa: PLW1510
                             ["sysctl", "-n", sysctl_name],
                             capture_output=True, text=True, timeout=5
                         )
@@ -355,10 +355,10 @@ class CPUCollector(BaseCollector):
                             cache_bytes = int(result.stdout.strip())
                             if cache_bytes > 0:
                                 cache_sizes[cache_level] = cache_bytes // 1024  # Convert to KB
-                    except:
+                    except Exception:  # noqa: BLE001,S110
                         pass
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.debug(f"Failed to get CPU info via sysctl: {e}")
 
         # Clean up processor name and extract vendor if needed
@@ -384,7 +384,7 @@ class CPUCollector(BaseCollector):
             "cache_sizes": cache_sizes if cache_sizes else None
         }
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collects CPU data."""
         usage_percent = psutil.cpu_percent(interval=1)
         usage_per_core = psutil.cpu_percent(interval=1, percpu=True)
@@ -404,7 +404,7 @@ class CPUCollector(BaseCollector):
         except (AttributeError, KeyError):
             # sensors_temperatures not available on all platforms
             logger.debug("CPU temperature sensors not available on this platform")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning(f"Unexpected error reading CPU temperature: {e}")
 
         # Combine dynamic and static data
@@ -423,7 +423,7 @@ class CPUCollector(BaseCollector):
 class DiskCollector(BaseCollector):
     """Collector for disk information."""
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collects disk data."""
         disks_info = []
         for partition in psutil.disk_partitions():
@@ -441,7 +441,7 @@ class DiskCollector(BaseCollector):
                 # Ignore drives that are not ready, e.g. CD-ROMs
                 logger.debug(f"Skipping inaccessible drive {partition.mountpoint}: {e}")
                 continue
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Unexpected error accessing drive {partition.mountpoint}: {e}")
                 continue
         return {"disks": disks_info}
@@ -456,26 +456,26 @@ class GPUCollector(BaseCollector):
                 pynvml.nvmlInit()
                 self.nvml_initialized = True
                 logger.info("GPU monitoring initialized via pynvml")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Failed to initialize NVML via pynvml: {e}")
         elif NVML_AVAILABLE:
             try:
                 nvml.nvmlInit()
                 self.nvml_initialized = True
                 logger.info("GPU monitoring initialized via nvidia-ml-py")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Failed to initialize NVML via nvidia-ml-py: {e}")
         else:
             logger.info("No NVIDIA GPU monitoring library available, will try generic methods")
 
-    def _get_generic_gpu_info_windows(self) -> List[Dict[str, Any]]:
+    def _get_generic_gpu_info_windows(self) -> list[dict[str, Any]]:
         """Get GPU info on Windows using WMI via subprocess."""
         gpus = []
         try:
             import subprocess
 
             # Get GPU info via wmic
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: PLW1510
                 ["wmic", "path", "win32_VideoController", "get", "Name,AdapterRAM,CurrentRefreshRate,VideoProcessor",
                  "/value"],
                 capture_output=True, text=True, timeout=5
@@ -525,7 +525,7 @@ class GPUCollector(BaseCollector):
             if gpus:
                 try:
                     # Get GPU utilization
-                    result = subprocess.run(
+                    result = subprocess.run(  # noqa: PLW1510
                         ["wmic", "path", "Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine",
                          "where", "Name like '%engtype_3D%'", "get", "UtilizationPercentage", "/value"],
                         capture_output=True, text=True, timeout=5
@@ -538,21 +538,21 @@ class GPUCollector(BaseCollector):
                                 try:
                                     util = float(line.split('=')[1].strip())
                                     utilizations.append(util)
-                                except:
+                                except Exception:  # noqa: BLE001,S110
                                     pass
 
                         # Apply utilization to first GPU (simplified approach)
                         if utilizations and gpus:
                             gpus[0]["usage_percent"] = max(utilizations)
-                except:
+                except Exception:  # noqa: BLE001,S110
                     pass
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Failed to get GPU info via WMI: {e}")
 
         return gpus
 
-    def _get_generic_gpu_info_linux(self) -> List[Dict[str, Any]]:
+    def _get_generic_gpu_info_linux(self) -> list[dict[str, Any]]:
         """Get GPU info on Linux using various methods."""
         gpus = []
 
@@ -560,7 +560,7 @@ class GPUCollector(BaseCollector):
         try:
             import subprocess
 
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: PLW1510
                 ["lspci", "-v", "-nn"],
                 capture_output=True, text=True, timeout=5
             )
@@ -596,7 +596,7 @@ class GPUCollector(BaseCollector):
                             elif 'G' in size_part:
                                 size_gb = int(size_part.replace('G', ''))
                                 current_gpu["memory_total_mb"] = size_gb * 1024
-                        except:
+                        except Exception:  # noqa: BLE001,S110
                             pass
                     elif current_gpu and line.strip() == '':
                         # Empty line indicates end of device info
@@ -607,7 +607,7 @@ class GPUCollector(BaseCollector):
                 if current_gpu:
                     gpus.append(current_gpu)
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Failed to get GPU info via lspci: {e}")
 
         # Try to get Intel GPU info
@@ -615,7 +615,7 @@ class GPUCollector(BaseCollector):
             import subprocess
 
             # Check for Intel GPU
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: PLW1510
                 ["cat", "/sys/class/drm/card0/device/vendor"],
                 capture_output=True, text=True, timeout=2
             )
@@ -634,36 +634,36 @@ class GPUCollector(BaseCollector):
 
                 # Try to get more specific name
                 try:
-                    result = subprocess.run(
+                    result = subprocess.run(  # noqa: PLW1510
                         ["cat", "/sys/class/drm/card0/device/label"],
                         capture_output=True, text=True, timeout=2
                     )
                     if result.returncode == 0 and result.stdout.strip():
                         intel_gpu["name"] = f"Intel {result.stdout.strip()}"
-                except:
+                except Exception:  # noqa: BLE001,S110
                     pass
 
                 # Try to get temperature
                 try:
-                    result = subprocess.run(
+                    result = subprocess.run(  # noqa: PLW1510
                         ["cat", "/sys/class/drm/card0/gt/gt0/throttle_reason_status"],
                         capture_output=True, text=True, timeout=2
                     )
                     # This is a simplified approach - actual temperature reading would be more complex
-                except:
+                except Exception:  # noqa: BLE001,S110
                     pass
 
                 # Only add if we haven't already detected this GPU
                 if not any(gpu for gpu in gpus if "Intel" in gpu.get("name", "")):
                     gpus.append(intel_gpu)
 
-        except:
+        except Exception:  # noqa: BLE001,S110
             pass
 
         # Try AMD GPU detection
         try:
-            import subprocess
             import os
+            import subprocess
 
             # Check for AMD GPUs in /sys/class/drm/
             for card in os.listdir("/sys/class/drm/"):
@@ -686,13 +686,13 @@ class GPUCollector(BaseCollector):
 
                             # Try to get model name
                             try:
-                                result = subprocess.run(
+                                result = subprocess.run(  # noqa: PLW1510
                                     ["cat", f"/sys/class/drm/{card}/device/product_name"],
                                     capture_output=True, text=True, timeout=2
                                 )
                                 if result.returncode == 0 and result.stdout.strip():
                                     amd_gpu["name"] = result.stdout.strip()
-                            except:
+                            except Exception:  # noqa: BLE001,S110
                                 pass
 
                             # Try to get temperature
@@ -704,27 +704,27 @@ class GPUCollector(BaseCollector):
                                     with open(temp_files[0], 'r') as f:
                                         temp_milli = int(f.read().strip())
                                         amd_gpu["temperature"] = temp_milli / 1000.0
-                            except:
+                            except Exception:  # noqa: BLE001,S110
                                 pass
 
                             # Only add if we haven't already detected this GPU
                             if not any(gpu for gpu in gpus if amd_gpu["name"] in gpu.get("name", "")):
                                 gpus.append(amd_gpu)
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Failed to get AMD GPU info: {e}")
 
         return gpus
 
-    def _get_generic_gpu_info_macos(self) -> List[Dict[str, Any]]:
+    def _get_generic_gpu_info_macos(self) -> list[dict[str, Any]]:
         """Get GPU info on macOS using system_profiler."""
         gpus = []
         try:
-            import subprocess
             import json
+            import subprocess
 
             # Use system_profiler to get GPU info
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: PLW1510
                 ["system_profiler", "SPDisplaysDataType", "-json"],
                 capture_output=True, text=True, timeout=10
             )
@@ -788,7 +788,7 @@ class GPUCollector(BaseCollector):
                                 # Unified memory - report total system memory in MB
                                 gpu_info["memory_total_mb"] = total_memory / (1024 * 1024)
                                 gpu_info["unified_memory"] = True
-                        except Exception:
+                        except Exception:  # noqa: BLE001,S110
                             pass
 
                     # Check for Metal support (indicates it's a capable GPU)
@@ -809,7 +809,7 @@ class GPUCollector(BaseCollector):
                         gpus.append(gpu_info)
                         gpu_id += 1
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Failed to get GPU info via system_profiler: {e}")
 
         # Try to get additional GPU temperature info via powermetrics (requires sudo)
@@ -818,7 +818,7 @@ class GPUCollector(BaseCollector):
                 import subprocess
                 
                 # Try powermetrics for Apple Silicon GPU metrics (if available without sudo)
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: PLW1510
                     ["powermetrics", "--samplers", "gpu_power", "-n", "1", "-f", "plist"],
                     capture_output=True, text=True, timeout=5
                 )
@@ -829,12 +829,12 @@ class GPUCollector(BaseCollector):
                     # For now, we'll skip this advanced feature
                     pass
                     
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.debug(f"Failed to get additional GPU metrics via powermetrics: {e}")
 
         return gpus
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         gpus = []
 
         # First try NVIDIA GPUs with existing code
@@ -856,13 +856,13 @@ class GPUCollector(BaseCollector):
                     # Get temperature
                     try:
                         temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-                    except:
+                    except Exception:  # noqa: BLE001
                         temp = None
 
                     # Get power usage
                     try:
                         power = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0  # Convert to watts
-                    except:
+                    except Exception:  # noqa: BLE001
                         power = None
 
                     gpus.append({
@@ -874,7 +874,7 @@ class GPUCollector(BaseCollector):
                         "temperature": temp,
                         "power_usage": power
                     })
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Error collecting GPU data with pynvml: {e}")
 
         elif self.nvml_initialized and NVML_AVAILABLE:
@@ -895,7 +895,7 @@ class GPUCollector(BaseCollector):
                     # Get temperature
                     try:
                         temp = nvml.nvmlDeviceGetTemperature(handle, nvml.NVML_TEMPERATURE_GPU)
-                    except:
+                    except Exception:  # noqa: BLE001
                         temp = None
 
                     gpus.append({
@@ -907,7 +907,7 @@ class GPUCollector(BaseCollector):
                         "temperature": temp,
                         "power_usage": None
                     })
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Error collecting GPU data with nvidia-ml-py: {e}")
 
         # If no NVIDIA GPUs found or NVML not available, try generic methods
@@ -932,14 +932,14 @@ class GPUCollector(BaseCollector):
                     pynvml.nvmlShutdown()
                 elif NVML_AVAILABLE:
                     nvml.nvmlShutdown()
-            except:
+            except Exception:  # noqa: BLE001,S110
                 pass
 
 
 class MemoryCollector(BaseCollector):
     """Collector for memory information."""
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collects memory data."""
         mem = psutil.virtual_memory()
         swap = psutil.swap_memory()
@@ -957,7 +957,7 @@ class MemoryCollector(BaseCollector):
 class NetworkCollector(BaseCollector):
     """Collector for network information."""
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collects network data."""
         net_io = psutil.net_io_counters(pernic=True)
         return {"interfaces": {if_name: {
@@ -975,7 +975,7 @@ class NetworkCollector(BaseCollector):
 class ProcessCollector(BaseCollector):
     """Collector for process information."""
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collects process data."""
         processes = []
         for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
@@ -983,11 +983,11 @@ class ProcessCollector(BaseCollector):
                 processes.append(proc.info)
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
                 logger.debug(f"Skipping process {proc.info.get('pid', 'unknown')}: {type(e).__name__}")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Unexpected error accessing process {proc.info.get('pid', 'unknown')}: {e}")
         return {"processes": processes}
 
-    async def get_top_processes(self, limit: int = 10, sort_by: str = 'cpu_percent') -> List[Dict[str, Any]]:
+    async def get_top_processes(self, limit: int = 10, sort_by: str = 'cpu_percent') -> list[dict[str, Any]]:
         """Get top processes sorted by a given metric."""
         data = await self.get_cached_data()
         processes = data.get("processes", [])
@@ -1002,13 +1002,13 @@ class ProcessCollector(BaseCollector):
 class SystemCollector(BaseCollector):
     """Collector for general system information."""
 
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collects general system data."""
         boot_time = psutil.boot_time()
-        uptime_seconds = int(datetime.now().timestamp() - boot_time)
+        uptime_seconds = int(datetime.now().timestamp() - boot_time)  # noqa: DTZ005 (intentional local time)
 
         return {
-            "timestamp": datetime.now(),
+            "timestamp": datetime.now(),  # noqa: DTZ005 (intentional local time)
             "hostname": platform.node(),
             "platform": f"{platform.system()} {platform.release()}",
             "architecture": platform.machine(),
@@ -1025,7 +1025,7 @@ class IOPerformanceCollector(BaseCollector):
         self._last_io_stats = None
         self._last_io_time = None
     
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collect I/O performance data"""
         current_time = time.time()
         current_stats = psutil.disk_io_counters()
@@ -1045,7 +1045,7 @@ class IOPerformanceCollector(BaseCollector):
                     "write_time_ms": disk_stats.write_time,
                     "busy_time_ms": getattr(disk_stats, 'busy_time', 0)
                 })
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Could not get per-disk stats: {e}")
         
         # Calculate rates if we have previous data
@@ -1095,7 +1095,7 @@ class SystemLoadCollector(BaseCollector):
         self._last_cpu_stats = None
         self._last_stats_time = None
     
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collect system load data"""
         current_time = time.time()
         
@@ -1158,11 +1158,11 @@ class SystemLoadCollector(BaseCollector):
                         processes_blocked += 1
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Could not count process states: {e}")
         
         # Get boot time
-        boot_time = datetime.fromtimestamp(psutil.boot_time())
+        boot_time = datetime.fromtimestamp(psutil.boot_time())  # noqa: DTZ006 (intentional local time)
         
         result = {
             "context_switches_per_sec": context_switches_per_sec,
@@ -1184,7 +1184,7 @@ class EnhancedMemoryCollector(BaseCollector):
         self._last_memory_stats = None
         self._last_memory_time = None
     
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collect enhanced memory data"""
         current_time = time.time()
         mem = psutil.virtual_memory()
@@ -1226,7 +1226,7 @@ class EnhancedMemoryCollector(BaseCollector):
             # Try to get memory statistics (Linux)
             import os
             if os.path.exists('/proc/vmstat'):
-                with open('/proc/vmstat', 'r') as f:
+                with open('/proc/vmstat', 'r') as f:  # noqa: ASYNC230
                     vmstat = f.read()
                     
                 current_stats = {}
@@ -1255,7 +1255,7 @@ class EnhancedMemoryCollector(BaseCollector):
                 self._last_memory_stats = current_stats
                 self._last_memory_time = current_time
                 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"Could not get enhanced memory stats: {e}")
         
         if page_faults_per_sec is not None:
@@ -1276,7 +1276,7 @@ class EnhancedNetworkCollector(BaseCollector):
         self._last_network_stats = None
         self._last_network_time = None
     
-    async def collect_data(self) -> Dict[str, Any]:
+    async def collect_data(self) -> dict[str, Any]:
         """Collect enhanced network data"""
         current_time = time.time()
         net_io = psutil.net_io_counters(pernic=True)
@@ -1306,7 +1306,7 @@ class EnhancedNetworkCollector(BaseCollector):
             
             try:
                 # Get network interface addresses and stats
-                net_if_addrs = psutil.net_if_addrs()
+
                 net_if_stats = psutil.net_if_stats()
                 
                 if interface_name in net_if_stats:
@@ -1314,7 +1314,7 @@ class EnhancedNetworkCollector(BaseCollector):
                     is_up = if_stats.isup
                     speed_mbps = if_stats.speed if if_stats.speed > 0 else None
                     mtu = if_stats.mtu
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.debug(f"Could not get interface details for {interface_name}: {e}")
             
             enhanced_interfaces.append({
@@ -1375,7 +1375,7 @@ logger.info("System collectors initialized successfully")
 @mcp.tool()
 async def get_current_datetime() -> str:
     """Get the current local datetime in ISO Format YYYY-MM-DD HH:MM:SS"""
-    return datetime.now().isoformat(sep=" ", timespec="seconds")
+    return datetime.now().isoformat(sep=" ", timespec="seconds")  # noqa: DTZ005 (intentional local time)
 
 
 @mcp.tool()
@@ -1401,7 +1401,7 @@ async def get_cpu_info() -> CPUInfo:
 
 
 @mcp.tool()
-async def get_gpu_info() -> List[GPUInfo]:
+async def get_gpu_info() -> list[GPUInfo]:
     """Get information for all detected GPUs in the system.
 
     Returns a list of GPU information including:
@@ -1446,7 +1446,7 @@ async def get_memory_info() -> MemoryInfo:
 
 
 @mcp.tool()
-async def get_disk_info() -> List[DiskInfo]:
+async def get_disk_info() -> list[DiskInfo]:
     """Get disk usage information for all mounted drives"""
     data = await disk_collector.get_cached_data()
     return [DiskInfo(**disk) for disk in data.get('disks', [])]
@@ -1497,7 +1497,7 @@ async def get_system_snapshot() -> SystemSnapshot:
 
 # Tools für Monitoring
 @mcp.tool()
-async def monitor_cpu_usage(duration_seconds: int = 5) -> Dict[str, Any]:
+async def monitor_cpu_usage(duration_seconds: int = 5) -> dict[str, Any]:
     """Monitor CPU usage over a specified duration"""
     logger.info(f"Starting CPU monitoring for {duration_seconds} seconds")
     samples = []
@@ -1518,13 +1518,13 @@ async def monitor_cpu_usage(duration_seconds: int = 5) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def get_top_processes(limit: int = 10, sort_by: str = 'cpu_percent') -> List[Dict[str, Any]]:
+async def get_top_processes(limit: int = 10, sort_by: str = 'cpu_percent') -> list[dict[str, Any]]:
     """Get top processes by CPU or memory usage. sort_by can be 'cpu_percent' or 'memory_percent'."""
     return await process_collector.get_top_processes(limit, sort_by)
 
 
 @mcp.tool()
-async def get_network_stats() -> Dict[str, Any]:
+async def get_network_stats() -> dict[str, Any]:
     """Get network interface statistics"""
     return await network_collector.get_cached_data()
 
@@ -1646,7 +1646,7 @@ async def get_enhanced_memory_info() -> EnhancedMemoryInfo:
 
 
 @mcp.tool()
-async def get_enhanced_network_stats() -> List[EnhancedNetworkInfo]:
+async def get_enhanced_network_stats() -> list[EnhancedNetworkInfo]:
     """Get detailed network statistics with performance metrics.
     
     Returns comprehensive network data for each interface:
@@ -1702,7 +1702,7 @@ async def get_performance_snapshot() -> SystemPerformanceSnapshot:
 
 
 @mcp.tool()
-async def monitor_io_performance(duration_seconds: int = 5) -> Dict[str, Any]:
+async def monitor_io_performance(duration_seconds: int = 5) -> dict[str, Any]:
     """Monitor I/O performance over a specified duration.
     
     Args:
@@ -1720,7 +1720,7 @@ async def monitor_io_performance(duration_seconds: int = 5) -> Dict[str, Any]:
     for i in range(duration_seconds):
         data = await io_performance_collector.collect_data()
         sample = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat(),  # noqa: DTZ005 (intentional local time)
             "read_bytes_per_sec": data['read_bytes_per_sec'],
             "write_bytes_per_sec": data['write_bytes_per_sec'],
             "total_bytes_per_sec": data['read_bytes_per_sec'] + data['write_bytes_per_sec'],

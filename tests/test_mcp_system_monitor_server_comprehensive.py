@@ -1,32 +1,60 @@
-import pytest
 import asyncio
-import json
 import time
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from datetime import datetime
-from typing import Dict, Any, List
+from unittest.mock import Mock, patch
+
+import pytest
 
 # Import all models and collectors
 from mcp_system_monitor_server import (
-    CPUInfo, CPUCollector, GPUInfo, GPUCollector, DiskInfo, DiskCollector, 
-    SystemInfo, SystemSnapshot, SystemCollector, NetworkCollector, 
-    MemoryCollector, MemoryInfo, ProcessCollector,
+    CPUCollector,
+    CPUInfo,
+    DiskCollector,
+    DiskInfo,
+    EnhancedMemoryCollector,
+    EnhancedMemoryInfo,
+    EnhancedNetworkCollector,
+    EnhancedNetworkInfo,
+    GPUCollector,
+    GPUInfo,
+    IOPerformanceCollector,
     # Phase 1 models and collectors
-    IOPerformanceInfo, IOPerformanceCollector, SystemLoadInfo, SystemLoadCollector,
-    EnhancedMemoryInfo, EnhancedMemoryCollector, EnhancedNetworkInfo, EnhancedNetworkCollector,
+    IOPerformanceInfo,
+    MemoryCollector,
+    MemoryInfo,
+    NetworkCollector,
+    ProcessCollector,
+    SystemCollector,
+    SystemInfo,
+    SystemLoadCollector,
+    SystemLoadInfo,
     SystemPerformanceSnapshot,
+    SystemSnapshot,
+    get_cpu_info,
     # Import all MCP tools and resources
-    get_current_datetime, get_cpu_info, get_gpu_info, get_memory_info,
-    get_disk_info, get_system_snapshot, monitor_cpu_usage, get_top_processes,
-    get_network_stats, live_cpu_resource, live_memory_resource, system_config_resource,
+    get_current_datetime,
+    get_disk_info,
+    get_enhanced_memory_info,
+    get_enhanced_network_stats,
+    get_gpu_info,
     # Phase 1 MCP tools and resources
-    get_io_performance, get_system_load, get_enhanced_memory_info,
-    get_enhanced_network_stats, get_performance_snapshot, monitor_io_performance,
-    live_io_performance_resource, live_system_load_resource, live_network_performance_resource,
+    get_io_performance,
+    get_memory_info,
+    get_network_stats,
+    get_performance_snapshot,
+    get_system_load,
+    get_system_snapshot,
+    get_top_processes,
+    live_cpu_resource,
+    live_io_performance_resource,
+    live_memory_resource,
+    live_network_performance_resource,
+    live_system_load_resource,
     # Import the FastMCP server instance
-    mcp
+    monitor_cpu_usage,
+    monitor_io_performance,
+    system_config_resource,
 )
-
 
 # =============================================================================
 # MCP TOOLS TESTS
@@ -642,13 +670,13 @@ async def test_full_system_monitoring_integration():
     gpu_info = await get_gpu_info()
     memory_info = await get_memory_info()
     disk_info = await get_disk_info()
-    network_stats = await get_network_stats()
+    network_stats = await get_network_stats()  # noqa: F841
     
     # Test Phase 1 components
-    io_performance = await get_io_performance()
-    system_load = await get_system_load()
+    io_performance = await get_io_performance()  # noqa: F841
+    system_load = await get_system_load()  # noqa: F841
     enhanced_memory = await get_enhanced_memory_info()
-    enhanced_network = await get_enhanced_network_stats()
+    enhanced_network = await get_enhanced_network_stats()  # noqa: F841
     
     # Test system snapshot includes all components
     snapshot = await get_system_snapshot()
@@ -782,7 +810,7 @@ async def test_get_top_processes_invalid_params():
 async def test_gpu_collector_error_handling():
     """Test GPU collector error handling scenarios"""
     # Test when NVML libraries are not available
-    with patch('mcp_system_monitor_server.PYNVML_AVAILABLE', False):
+    with patch('mcp_system_monitor_server.PYNVML_AVAILABLE', False):  # noqa: SIM117
         with patch('mcp_system_monitor_server.NVML_AVAILABLE', False):
             result = await get_gpu_info()
             assert isinstance(result, list)
@@ -798,7 +826,7 @@ async def test_network_stats_error_handling():
             result = await get_network_stats()
             # If it doesn't raise an exception, verify structure
             assert isinstance(result, dict)
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             # If it does raise, that's also acceptable for this test
             pass
 
@@ -972,7 +1000,7 @@ async def test_datetime_format_validation():
     assert isinstance(parsed_dt, datetime)
     
     # Should be reasonably recent (within 24 hours to account for any timezone/system issues)
-    now = datetime.now()
+    now = datetime.now()  # noqa: DTZ005 (intentional local time)
     time_diff = abs((now - parsed_dt).total_seconds())
     assert time_diff < 86400  # Within 24 hours
 
@@ -985,7 +1013,7 @@ async def test_datetime_format_validation():
 async def test_gpu_detection_edge_cases():
     """Test GPU detection with various edge cases"""
     # Test with no GPUs detected
-    with patch.object(GPUCollector, '_get_generic_gpu_info_windows', return_value=[]):
+    with patch.object(GPUCollector, '_get_generic_gpu_info_windows', return_value=[]):  # noqa: SIM117
         with patch.object(GPUCollector, '_get_generic_gpu_info_linux', return_value=[]):
             with patch.object(GPUCollector, '_get_generic_gpu_info_macos', return_value=[]):
                 with patch('mcp_system_monitor_server.PYNVML_AVAILABLE', False):
@@ -1000,7 +1028,7 @@ async def test_system_info_with_mock_data():
     """Test system info with controlled mock data"""
     mock_boot_time = 1000000000  # Fixed timestamp
     
-    with patch('psutil.boot_time', return_value=mock_boot_time):
+    with patch('psutil.boot_time', return_value=mock_boot_time):  # noqa: SIM117
         with patch('platform.node', return_value='test-hostname'):
             with patch('platform.system', return_value='TestOS'):
                 with patch('platform.release', return_value='1.0'):
@@ -1059,7 +1087,7 @@ async def test_malformed_process_data():
         try:
             result = await get_top_processes(limit=5)
             assert isinstance(result, list)
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             # It's acceptable if the function raises an exception for malformed data
             pass
 

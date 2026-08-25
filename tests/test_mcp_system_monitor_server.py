@@ -1,9 +1,21 @@
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+
 from mcp_system_monitor_server import (
-    CPUInfo, CPUCollector, GPUInfo, GPUCollector, DiskInfo, DiskCollector, 
-    SystemInfo, SystemSnapshot, SystemCollector, NetworkCollector, 
-    MemoryCollector, MemoryInfo, ProcessCollector
+    CPUCollector,
+    CPUInfo,
+    DiskCollector,
+    DiskInfo,
+    GPUCollector,
+    GPUInfo,
+    MemoryCollector,
+    MemoryInfo,
+    NetworkCollector,
+    ProcessCollector,
+    SystemCollector,
+    SystemInfo,
+    SystemSnapshot,
 )
 
 
@@ -150,14 +162,14 @@ async def test_error_handling():
     """Test error handling in collectors"""
     with patch('psutil.cpu_percent', side_effect=Exception("Test error")):
         collector = CPUCollector()
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             await collector.collect_data()
 
 
 @pytest.mark.asyncio
 async def test_gpu_collector_no_gpu():
     """Test GPU collector when no GPUs are available"""
-    with patch('mcp_system_monitor_server.PYNVML_AVAILABLE', False):
+    with patch('mcp_system_monitor_server.PYNVML_AVAILABLE', False):  # noqa: SIM117
         with patch('mcp_system_monitor_server.NVML_AVAILABLE', False):
             with patch('subprocess.run') as mock_run:
                 # Mock system_profiler to return no GPU data

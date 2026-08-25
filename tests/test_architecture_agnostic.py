@@ -3,28 +3,51 @@ Architecture and OS agnostic tests for MCP System Monitor.
 These tests validate data contracts and behavior without making assumptions
 about specific hardware, OS, or architecture characteristics.
 """
-import pytest
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List
-from mcp_system_monitor_server import (
-    # MCP Tools
-    get_current_datetime, get_cpu_info, get_gpu_info, get_memory_info,
-    get_disk_info, get_system_snapshot, monitor_cpu_usage, 
-    get_top_processes, get_network_stats,
-    # Phase 1 MCP Tools
-    get_io_performance, get_system_load, get_enhanced_memory_info,
-    get_enhanced_network_stats, get_performance_snapshot, monitor_io_performance,
-    # MCP Resources  
-    live_cpu_resource, live_memory_resource, system_config_resource,
-    # Phase 1 MCP Resources
-    live_io_performance_resource, live_system_load_resource, live_network_performance_resource,
-    # Data Models
-    CPUInfo, GPUInfo, MemoryInfo, DiskInfo, SystemInfo, SystemSnapshot,
-    # Phase 1 Data Models
-    IOPerformanceInfo, SystemLoadInfo, EnhancedMemoryInfo, EnhancedNetworkInfo, SystemPerformanceSnapshot
-)
 
+import pytest
+
+from mcp_system_monitor_server import (
+    # Data Models
+    CPUInfo,
+    DiskInfo,
+    EnhancedMemoryInfo,
+    EnhancedNetworkInfo,
+    GPUInfo,
+    # Phase 1 Data Models
+    IOPerformanceInfo,
+    MemoryInfo,
+    SystemInfo,
+    SystemLoadInfo,
+    SystemPerformanceSnapshot,
+    SystemSnapshot,
+    get_cpu_info,
+    # MCP Tools
+    get_current_datetime,
+    get_disk_info,
+    get_enhanced_memory_info,
+    get_enhanced_network_stats,
+    get_gpu_info,
+    # Phase 1 MCP Tools
+    get_io_performance,
+    get_memory_info,
+    get_network_stats,
+    get_performance_snapshot,
+    get_system_load,
+    get_system_snapshot,
+    get_top_processes,
+    # MCP Resources  
+    live_cpu_resource,
+    # Phase 1 MCP Resources
+    live_io_performance_resource,
+    live_memory_resource,
+    live_network_performance_resource,
+    live_system_load_resource,
+    monitor_cpu_usage,
+    monitor_io_performance,
+    system_config_resource,
+)
 
 # =============================================================================
 # GENERIC DATA CONTRACT TESTS
@@ -340,7 +363,7 @@ async def test_get_performance_snapshot_contract():
     assert isinstance(result.collection_time, datetime)
     
     # Collection time should be recent
-    now = datetime.now()
+    now = datetime.now()  # noqa: DTZ005 (intentional local time)
     time_diff = abs((now - result.collection_time).total_seconds())
     assert time_diff < 60  # Within 1 minute
 
@@ -557,7 +580,7 @@ async def test_error_handling_robust():
         monitoring = await monitor_cpu_usage(duration_seconds=1)
         assert isinstance(monitoring, dict)
         
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         pytest.fail(f"Functions should handle edge cases gracefully: {e}")
 
 
@@ -565,9 +588,9 @@ async def test_error_handling_robust():
 async def test_data_freshness():
     """Test that data is reasonably fresh"""
     # Get current time and system data
-    before = datetime.now()
+    before = datetime.now()  # noqa: DTZ005 (intentional local time)
     snapshot = await get_system_snapshot()
-    after = datetime.now()
+
     
     # Collection time should be recent (within 10 seconds)
     time_diff = abs((before - snapshot.collection_time).total_seconds())

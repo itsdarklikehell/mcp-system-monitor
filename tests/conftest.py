@@ -1,9 +1,10 @@
 """
 Test configuration and fixtures for MCP System Monitor Server tests.
 """
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
+
+import pytest
 
 
 @pytest.fixture(scope="session")
@@ -158,7 +159,7 @@ def mock_datetime():
     """Mock datetime functions for consistent testing."""
     with patch('mcp_system_monitor_server.datetime') as mock_dt:
         from datetime import datetime
-        fixed_time = datetime(2024, 1, 15, 12, 30, 45)
+        fixed_time = datetime(2024, 1, 15, 12, 30, 45)  # noqa: DTZ001 (fixed test fixture)
         mock_dt.now.return_value = fixed_time
         mock_dt.fromisoformat = datetime.fromisoformat
         yield mock_dt
