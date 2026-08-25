@@ -1,7 +1,10 @@
 from unittest.mock import patch
 
 import pytest
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 from mcp_system_monitor_server import (
     CPUCollector,
     CPUInfo,

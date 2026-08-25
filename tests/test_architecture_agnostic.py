@@ -7,7 +7,10 @@ import asyncio
 from datetime import datetime
 
 import pytest
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 from mcp_system_monitor_server import (
     # Data Models
     CPUInfo,
