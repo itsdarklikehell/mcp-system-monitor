@@ -1,32 +1,60 @@
-import pytest
 import asyncio
-import json
 import time
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from datetime import datetime
-from typing import Dict, Any, List
+from unittest.mock import Mock, patch
+
+import pytest
 
 # Import all models and collectors
 from mcp_system_monitor_server import (
-    CPUInfo, CPUCollector, GPUInfo, GPUCollector, DiskInfo, DiskCollector, 
-    SystemInfo, SystemSnapshot, SystemCollector, NetworkCollector, 
-    MemoryCollector, MemoryInfo, ProcessCollector,
+    CPUCollector,
+    CPUInfo,
+    DiskCollector,
+    DiskInfo,
+    EnhancedMemoryCollector,
+    EnhancedMemoryInfo,
+    EnhancedNetworkCollector,
+    EnhancedNetworkInfo,
+    GPUCollector,
+    GPUInfo,
+    IOPerformanceCollector,
     # Phase 1 models and collectors
-    IOPerformanceInfo, IOPerformanceCollector, SystemLoadInfo, SystemLoadCollector,
-    EnhancedMemoryInfo, EnhancedMemoryCollector, EnhancedNetworkInfo, EnhancedNetworkCollector,
+    IOPerformanceInfo,
+    MemoryCollector,
+    MemoryInfo,
+    NetworkCollector,
+    ProcessCollector,
+    SystemCollector,
+    SystemInfo,
+    SystemLoadCollector,
+    SystemLoadInfo,
     SystemPerformanceSnapshot,
+    SystemSnapshot,
+    get_cpu_info,
     # Import all MCP tools and resources
-    get_current_datetime, get_cpu_info, get_gpu_info, get_memory_info,
-    get_disk_info, get_system_snapshot, monitor_cpu_usage, get_top_processes,
-    get_network_stats, live_cpu_resource, live_memory_resource, system_config_resource,
+    get_current_datetime,
+    get_disk_info,
+    get_enhanced_memory_info,
+    get_enhanced_network_stats,
+    get_gpu_info,
     # Phase 1 MCP tools and resources
-    get_io_performance, get_system_load, get_enhanced_memory_info,
-    get_enhanced_network_stats, get_performance_snapshot, monitor_io_performance,
-    live_io_performance_resource, live_system_load_resource, live_network_performance_resource,
+    get_io_performance,
+    get_memory_info,
+    get_network_stats,
+    get_performance_snapshot,
+    get_system_load,
+    get_system_snapshot,
+    get_top_processes,
+    live_cpu_resource,
+    live_io_performance_resource,
+    live_memory_resource,
+    live_network_performance_resource,
+    live_system_load_resource,
     # Import the FastMCP server instance
-    mcp
+    monitor_cpu_usage,
+    monitor_io_performance,
+    system_config_resource,
 )
-
 
 # =============================================================================
 # MCP TOOLS TESTS

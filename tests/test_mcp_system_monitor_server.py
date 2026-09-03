@@ -1,9 +1,20 @@
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
 from mcp_system_monitor_server import (
-    CPUInfo, CPUCollector, GPUInfo, GPUCollector, DiskInfo, DiskCollector, 
-    SystemInfo, SystemSnapshot, SystemCollector, NetworkCollector, 
-    MemoryCollector, MemoryInfo, ProcessCollector
+    CPUCollector,
+    CPUInfo,
+    DiskCollector,
+    DiskInfo,
+    GPUCollector,
+    GPUInfo,
+    MemoryCollector,
+    MemoryInfo,
+    NetworkCollector,
+    ProcessCollector,
+    SystemCollector,
+    SystemInfo,
+    SystemSnapshot,
 )
 
 

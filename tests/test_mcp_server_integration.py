@@ -2,8 +2,8 @@
 Integration tests for MCP server functionality.
 Tests the actual MCP server endpoints and protocol compliance.
 """
+
 import pytest
-from unittest.mock import patch, AsyncMock
 from mcp.server.fastmcp import FastMCP
 from mcp_system_monitor_server import mcp
 
@@ -88,13 +88,21 @@ async def test_tool_input_validation():
 @pytest.mark.asyncio
 async def test_tool_return_types():
     """Test that tools return expected types according to their annotations."""
+
     from mcp_system_monitor_server import (
-        get_current_datetime, get_cpu_info, get_gpu_info, get_memory_info,
-        get_disk_info, get_system_snapshot, monitor_cpu_usage, 
-        get_top_processes, get_network_stats
+        CPUInfo,
+        MemoryInfo,
+        SystemSnapshot,
+        get_cpu_info,
+        get_current_datetime,
+        get_disk_info,
+        get_gpu_info,
+        get_memory_info,
+        get_network_stats,
+        get_system_snapshot,
+        get_top_processes,
+        monitor_cpu_usage,
     )
-    from mcp_system_monitor_server import CPUInfo, MemoryInfo, SystemSnapshot
-    from typing import Dict, Any, List
     
     # Test return types match annotations
     datetime_result = await get_current_datetime()
@@ -130,7 +138,9 @@ async def test_tool_return_types():
 async def test_resource_return_types():
     """Test that resources return expected string types."""
     from mcp_system_monitor_server import (
-        live_cpu_resource, live_memory_resource, system_config_resource
+        live_cpu_resource,
+        live_memory_resource,
+        system_config_resource,
     )
     
     cpu_resource = await live_cpu_resource()
@@ -186,8 +196,13 @@ async def test_error_propagation():
 async def test_concurrent_tool_execution():
     """Test that multiple tools can be executed concurrently."""
     import asyncio
+
     from mcp_system_monitor_server import (
-        get_current_datetime, get_cpu_info, get_memory_info, CPUInfo, MemoryInfo
+        CPUInfo,
+        MemoryInfo,
+        get_cpu_info,
+        get_current_datetime,
+        get_memory_info,
     )
     
     # Execute multiple tools concurrently
@@ -246,7 +261,11 @@ async def test_resource_caching_behavior():
 @pytest.mark.asyncio
 async def test_data_model_validation():
     """Test that Pydantic models properly validate data."""
-    from mcp_system_monitor_server import get_cpu_info, get_memory_info, get_system_snapshot
+    from mcp_system_monitor_server import (
+        get_cpu_info,
+        get_memory_info,
+        get_system_snapshot,
+    )
     
     # Get data and ensure it validates through Pydantic models
     cpu_info = await get_cpu_info()
