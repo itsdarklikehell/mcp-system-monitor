@@ -15,18 +15,18 @@ logger = logging.getLogger(__name__)
 
 # GPUtil has compatibility issues with Python 3.12+, using alternative approaches
 try:
-    import pynvml
-
-    PYNVML_AVAILABLE = True
-except ImportError:
-    PYNVML_AVAILABLE = False
-
-try:
     import nvidia_ml_py as nvml
 
     NVML_AVAILABLE = True
 except ImportError:
     NVML_AVAILABLE = False
+
+try:
+    import pynvml
+
+    PYNVML_AVAILABLE = True
+except ImportError:
+    PYNVML_AVAILABLE = False
 
 import platform
 
