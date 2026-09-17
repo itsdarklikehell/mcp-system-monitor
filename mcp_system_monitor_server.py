@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import psutil
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from pydantic import BaseModel, Field
 
 # Set up logging
@@ -1343,7 +1343,7 @@ class EnhancedNetworkCollector(BaseCollector):
         return {"enhanced_interfaces": enhanced_interfaces}
 
 
-mcp = FastMCP(
+mcp = MCPServer(
     name="SystemMonitor",
     dependencies=[
         "psutil",
