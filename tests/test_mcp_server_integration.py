@@ -4,7 +4,7 @@ Tests the actual MCP server endpoints and protocol compliance.
 """
 
 import pytest
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from mcp_system_monitor_server import mcp
 
 
@@ -12,7 +12,7 @@ from mcp_system_monitor_server import mcp
 @pytest.mark.asyncio
 async def test_mcp_server_instance():
     """Test that the MCP server instance is properly configured."""
-    assert isinstance(mcp, FastMCP)
+    assert isinstance(mcp, MCPServer)
     assert mcp.name == "SystemMonitor"
     
     # Check dependencies are declared
@@ -161,7 +161,7 @@ async def test_resource_return_types():
 async def test_server_capabilities():
     """Test that the server properly declares its capabilities."""
     # Test that the server instance exists and is properly configured
-    assert isinstance(mcp, FastMCP)
+    assert isinstance(mcp, MCPServer)
     assert mcp.name == "SystemMonitor"
     
     # Test that we can call the tools and resources
