@@ -30,6 +30,11 @@ from mcp_system_monitor_server import (
     SystemLoadInfo,
     SystemPerformanceSnapshot,
     SystemSnapshot,
+    # New metrics models
+    PowerAndEnvironmentInfo,
+    ActiveConnectionInfo,
+    LoggedInUserInfo,
+    # Import all MCP tools and resources
     get_cpu_info,
     # Import all MCP tools and resources
     get_current_datetime,
@@ -45,6 +50,10 @@ from mcp_system_monitor_server import (
     get_system_load,
     get_system_snapshot,
     get_top_processes,
+    # New metrics MCP tools
+    get_power_and_environment_info,
+    get_active_connections,
+    get_logged_in_users,
     live_cpu_resource,
     live_io_performance_resource,
     live_memory_resource,
@@ -677,7 +686,11 @@ async def test_full_system_monitoring_integration():
     system_load = await get_system_load()
     enhanced_memory = await get_enhanced_memory_info()
     enhanced_network = await get_enhanced_network_stats()
-    
+    # New metrics
+    power_env = await get_power_and_environment_info()
+    active_conns = await get_active_connections()
+    logged_users = await get_logged_in_users()
+
     # Test system snapshot includes all components
     snapshot = await get_system_snapshot()
     performance_snapshot = await get_performance_snapshot()

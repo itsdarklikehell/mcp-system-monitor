@@ -152,6 +152,33 @@ class EnhancedNetworkInfo(BaseModel):
     is_up: bool = Field(description="Interface is up")
 
 
+class PowerAndEnvironmentInfo(BaseModel):
+    """Power, thermal and environment information"""
+    has_battery: bool = Field(description="Whether the system has a battery")
+    battery_percent: float | None = Field(None, description="Battery charge percentage")
+    battery_power_watts: float | None = Field(None, description="Battery power draw in watts")
+    battery_time_remaining_minutes: int | None = Field(None, description="Estimated minutes until battery empty/charged")
+    fans: list[dict[str, Any]] = Field(description="Fan sensors: name, speed RPM, percentage")
+
+
+class ActiveConnectionInfo(BaseModel):
+    """An active network connection"""
+    family: str = Field(description="Address family: inet, inet6, unix")
+    type: str = Field(description="Socket type: tcp, udp, raw, etc.")
+    status: str | None = Field(None, description="TCP connection state, e.g. ESTABLISHED")
+    local_address: str = Field(description="Local address and port")
+    remote_address: str | None = Field(None, description="Remote address and port")
+    pid: int | None = Field(None, description="Process ID owning the connection")
+
+
+class LoggedInUserInfo(BaseModel):
+    """A currently logged-in user"""
+    user: str = Field(description="Username")
+    terminal: str | None = Field(None, description="Terminal device, e.g. tty1 or pts/0")
+    host: str | None = Field(None, description="Remote host if logged in remotely")
+    started: datetime = Field(description="Session start time")
+
+
 class SystemPerformanceSnapshot(BaseModel):
     """Complete system performance snapshot"""
     io_performance: IOPerformanceInfo
@@ -1822,6 +1849,171 @@ async def live_network_performance_resource() -> str:
     active_count = sum(1 for iface in interfaces if iface['is_up'])
     
     return f"Network: {active_count} active interfaces | Total: ↑{total_sent:.1f}MB/s ↓{total_recv:.1f}MB/s | Active: {most_active['interface_name']}"
+
+
+class PowerAndEnvironmentCollector(BaseCollector):
+    """Collector for battery, power and thermal (fans) information."""
+
+    async def collect_data(self) -> dict[str, Any]:
+        result: dict[str, Any] = {
+            "has_battery": False,
+            "battery_percent": None,
+            "battery_power_watts": None,
+            "battery_time_remaining_minutes": None,
+            "fans": [],
+        }
+
+        try:
+            battery = psutil.sensors_battery()
+        except Exception as e:
+            logger.debug(f"Cannot read battery info: {e}")
+            battery = None
+
+        if battery is not None:
+            result["has_battery"] = True
+            result["battery_percent"] = battery.percent
+            result["battery_power_watts"] = (
+                float(battery.power) if battery.power is not None else None
+            )
+            if battery.secsleft is not None and battery.secsleft > 0:
+                result["battery_time_remaining_minutes"] = int(battery.secsleft / 60)
+            else:
+                result["battery_time_remaining_minutes"] = None
+
+        try:
+            fans = psutil.sensors_fans()
+        except Exception as e:
+            logger.debug(f"Cannot read fan info: {e}")
+            fans = {}
+
+        for name, entries in fans.items():
+            for entry in entries:
+                result["fans"].append({
+                    "name": entry.label or name,
+                    "speed_rpm": entry.current,
+                    "percentage": None,
+                })
+
+        return result
+
+
+class NetworkConnectionsCollector(BaseCollector):
+    """Collector for active network connections."""
+
+    async def collect_data(self) -> dict[str, Any]:
+        connections: list[dict[str, Any]] = []
+        try:
+            for conn in psutil.net_connections(kind="inet"):
+                if conn.status != psutil.CONN_ESTABLISHED:
+                    continue
+                remote = None
+                if conn.raddr is not None:
+                    remote = f"{conn.raddr.ip}:{conn.raddr.port}"
+                connections.append({
+                    "family": "inet6" if conn.family == psutil.AF_INET6 else "inet",
+                    "type": "tcp",
+                    "status": conn.status,
+                    "local_address": f"{conn.laddr.ip}:{conn.laddr.port}",
+                    "remote_address": remote,
+                    "pid": conn.pid,
+                })
+        except Exception as e:
+            logger.debug(f"Cannot read network connections: {e}")
+
+        try:
+            for conn in psutil.net_connections(kind="inet", families=psutil.AF_INET):
+                pass
+        except Exception:
+            pass
+
+        try:
+            udp_conns: list[dict[str, Any]] = []
+            for conn in psutil.net_connections(kind="udp"):
+                remote = None
+                if conn.raddr is not None:
+                    remote = f"{conn.raddr.ip}:{conn.raddr.port}"
+                udp_conns.append({
+                    "family": "inet6" if conn.family == psutil.AF_INET6 else "inet",
+                    "type": "udp",
+                    "status": None,
+                    "local_address": f"{conn.laddr.ip}:{conn.laddr.port}",
+                    "remote_address": remote,
+                    "pid": conn.pid,
+                })
+            connections.extend(udp_conns)
+        except Exception as e:
+            logger.debug(f"Cannot read UDP connections: {e}")
+
+        connections.sort(key=lambda c: (c["family"], c["local_address"]))
+        return {"connections": connections}
+
+
+class UsersCollector(BaseCollector):
+    """Collector for currently logged-in users."""
+
+    async def collect_data(self) -> dict[str, Any]:
+        users: list[dict[str, Any]] = []
+        try:
+            for u in psutil.users():
+                users.append({
+                    "user": u.user,
+                    "terminal": u.terminal,
+                    "host": u.host,
+                    "started": datetime.fromtimestamp(u.started),
+                })
+        except Exception as e:
+            logger.debug(f"Cannot read logged-in users: {e}")
+        return {"users": users}
+
+
+# New metrics MCP tools
+@mcp.tool()
+async def get_power_and_environment_info() -> PowerAndEnvironmentInfo:
+    """Get battery, power draw and fan/thermal information.
+
+    Returns:
+        - Whether the system has a battery
+        - Current battery charge percentage
+        - Power draw in watts (laptop/portable)
+        - Estimated minutes remaining (discharging) or until charged (charging)
+        - Detected fan sensors with current RPM
+
+    Use this to monitor laptop battery health or thermal state.
+    """
+    data = await PowerAndEnvironmentCollector().get_cached_data()
+    return PowerAndEnvironmentInfo(**data)
+
+
+@mcp.tool()
+async def get_active_connections() -> list[ActiveConnectionInfo]:
+    """Get all currently active (ESTABLISHED/UDP) network connections.
+
+    Returns a list of active connections with local/remote addresses,
+    socket family/type and the owning process ID where available.
+
+    Use this to inspect what network activity is currently happening.
+    """
+    data = await NetworkConnectionsCollector().get_cached_data()
+    result: list[ActiveConnectionInfo] = []
+    for c in data.get("connections", []):
+        result.append(ActiveConnectionInfo(**c))
+    return result
+
+
+@mcp.tool()
+async def get_logged_in_users() -> list[LoggedInUserInfo]:
+    """Get users currently logged in to this system.
+
+    Returns each session's username, terminal, remote host (if any)
+    and session start time.
+
+    Use this to see who is actively using the machine.
+    """
+    data = await UsersCollector().get_cached_data()
+    result: list[LoggedInUserInfo] = []
+    for u in data.get("users", []):
+        result.append(LoggedInUserInfo(**u))
+    return result
 
 
 if __name__ == "__main__":

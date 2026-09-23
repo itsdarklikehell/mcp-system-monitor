@@ -43,6 +43,11 @@ capabilities for LLMs. Built with FastMCP for easy integration with Claude Deskt
 - `get_performance_snapshot`: Get complete performance monitoring snapshot
 - `monitor_io_performance`: Monitor I/O performance over specified duration with trend analysis
 
+**Phase 2 Power, Environment & Session Monitoring (3 tools):**
+- `get_power_and_environment_info`: Battery charge, power draw, fan RPM
+- `get_active_connections`: Active TCP/UDP network connections with owning PID
+- `get_logged_in_users`: Currently logged-in users and sessions
+
 ### MCP Resources
 
 **Basic System Resources (3 resources):**

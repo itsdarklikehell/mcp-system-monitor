@@ -8,7 +8,6 @@ from datetime import datetime
 
 import pytest
 from mcp_system_monitor_server import (
-    # Data Models
     CPUInfo,
     DiskInfo,
     EnhancedMemoryInfo,
@@ -21,6 +20,10 @@ from mcp_system_monitor_server import (
     SystemLoadInfo,
     SystemPerformanceSnapshot,
     SystemSnapshot,
+    # New metrics models
+    PowerAndEnvironmentInfo,
+    ActiveConnectionInfo,
+    LoggedInUserInfo,
     get_cpu_info,
     # MCP Tools
     get_current_datetime,
@@ -36,7 +39,11 @@ from mcp_system_monitor_server import (
     get_system_load,
     get_system_snapshot,
     get_top_processes,
-    # MCP Resources  
+    # New metrics MCP tools
+    get_power_and_environment_info,
+    get_active_connections,
+    get_logged_in_users,
+    # MCP Resources
     live_cpu_resource,
     # Phase 1 MCP Resources
     live_io_performance_resource,
@@ -345,13 +352,13 @@ async def test_get_enhanced_network_stats_contract():
 
 
 @pytest.mark.asyncio
-async def test_get_performance_snapshot_contract():
+async def test_get_performance_snapshot_contract() -> None:
     """Test performance snapshot tool returns valid SystemPerformanceSnapshot model"""
     result = await get_performance_snapshot()
-    
+
     # Must be SystemPerformanceSnapshot instance
     assert isinstance(result, SystemPerformanceSnapshot)
-    
+
     # Required fields must exist and be valid models
     assert isinstance(result.io_performance, IOPerformanceInfo)
     assert isinstance(result.system_load, SystemLoadInfo)
@@ -360,11 +367,70 @@ async def test_get_performance_snapshot_contract():
     for interface in result.enhanced_network:
         assert isinstance(interface, EnhancedNetworkInfo)
     assert isinstance(result.collection_time, datetime)
-    
+
     # Collection time should be recent
     now = datetime.now()
     time_diff = abs((now - result.collection_time).total_seconds())
     assert time_diff < 60  # Within 1 minute
+
+
+# =============================================================================
+# NEW METRICS CONTRACT TESTS
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_get_power_and_environment_info_contract() -> None:
+    """Test power and environment info tool returns valid PowerAndEnvironmentInfo"""
+    result = await get_power_and_environment_info()
+
+    assert isinstance(result, PowerAndEnvironmentInfo)
+    assert isinstance(result.has_battery, bool)
+    if result.battery_percent is not None:
+        assert isinstance(result.battery_percent, (int, float))
+        assert 0 <= result.battery_percent <= 100
+    if result.battery_power_watts is not None:
+        assert isinstance(result.battery_power_watts, (int, float))
+    if result.battery_time_remaining_minutes is not None:
+        assert isinstance(result.battery_time_remaining_minutes, int)
+        assert result.battery_time_remaining_minutes >= 0
+    assert isinstance(result.fans, list)
+    for fan in result.fans:
+        assert isinstance(fan, dict)
+        assert "name" in fan
+
+
+@pytest.mark.asyncio
+async def test_get_active_connections_contract() -> None:
+    """Test active connections tool returns valid list of ActiveConnectionInfo"""
+    result = await get_active_connections()
+
+    assert isinstance(result, list)
+    for conn in result:
+        assert isinstance(conn, ActiveConnectionInfo)
+        assert conn.family in ("inet", "inet6")
+        assert conn.type in ("tcp", "udp")
+        assert isinstance(conn.local_address, str) and len(conn.local_address) > 0
+        if conn.remote_address is not None:
+            assert isinstance(conn.remote_address, str)
+        if conn.pid is not None:
+            assert isinstance(conn.pid, int)
+
+
+@pytest.mark.asyncio
+async def test_get_logged_in_users_contract() -> None:
+    """Test logged-in users tool returns valid list of LoggedInUserInfo"""
+    result = await get_logged_in_users()
+
+    assert isinstance(result, list)
+    for user_info in result:
+        assert isinstance(user_info, LoggedInUserInfo)
+        assert isinstance(user_info.user, str) and len(user_info.user) > 0
+        if user_info.terminal is not None:
+            assert isinstance(user_info.terminal, str)
+        if user_info.host is not None:
+            assert isinstance(user_info.host, str)
+        assert isinstance(user_info.started, datetime)
 
 
 @pytest.mark.asyncio
