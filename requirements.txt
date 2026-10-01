@@ -1,13 +1,13 @@
 mcp[cli]==2.2.0
-psutil
+psutil==7.2.2
 pydantic==2.13.5
 nvidia-ml-py
 pynvml
 wmi; sys_platform == "win32"
 pywin32; sys_platform == "win32"
-uv
+uv==0.12.21
 
 # Development dependencies
-pytest
-pytest-asyncio
-pytest-cov
+pytest==9.1.1
+pytest==9.1.1
+pytest==9.1.1
