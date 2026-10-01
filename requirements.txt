@@ -1,6 +1,6 @@
-mcp[cli]
+mcp[cli]==2.2.0
 psutil
-pydantic
+pydantic==2.13.5
 nvidia-ml-py
 pynvml
 wmi; sys_platform == "win32"

@@ -22,9 +22,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "mcp[cli]",
+    "mcp[cli]>=2.2.0",
     "psutil",
-    "pydantic",
+    "pydantic>=2.13.5",
     "nvidia-ml-py",
     "pynvml",
     "uv"
